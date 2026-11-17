@@ -566,6 +566,12 @@ body {
   }
 }
 
+@media (max-width: 450px) {
+  .tool-top {
+    flex-direction: column;
+  }
+}
+
 /* ---------- Печать (Ctrl+P): печатаем только план ---------- */
 
 @media print {
