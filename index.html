@@ -1,65 +1,137 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Копилка инструментов управляющего</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
     <header class="header no-print">
-        <h1 class="header-title">Копилка инструментов</h1>
-        <p class="header-text">Помощник управляющего магазином. Отметьте зоны, по которым не закрывается план, и соберите из копилки свой план действий.</p>
+      <h1 class="header-title">Копилка инструментов</h1>
+      <p class="header-text">
+        Помощник управляющего магазином. Отметьте зоны, по которым не
+        закрывается план, и соберите из копилки свой план действий.
+      </p>
     </header>
 
     <!-- Этот блок показывается, только если базу не удалось загрузить автоматически -->
     <section class="load-box no-print" id="loadBox" hidden>
-        <h2>База инструментов не загрузилась</h2>
-        <p>Так бывает, если страница открыта двойным щелчком по файлу. Выберите файл <b>tools.json</b> из папки <b>data</b>.</p>
-        <input type="file" id="fileInput" accept=".json">
-        <p class="load-error" id="loadError"></p>
+      <h2>База инструментов не загрузилась</h2>
+      <p>
+        Так бывает, если страница открыта двойным щелчком по файлу. Выберите
+        файл <b>tools.json</b> из папки <b>data</b>.
+      </p>
+      <input type="file" id="fileInput" accept=".json" />
+      <p class="load-error" id="loadError"></p>
     </section>
 
     <main class="page" id="page" hidden>
+      <div class="left no-print">
+        <section class="block">
+          <h2 class="block-title">
+            <span class="step">1</span> Какие зоны западают?
+          </h2>
+          <div class="zones" id="zones"></div>
+        </section>
 
-        <div class="left no-print">
+        <section class="block">
+          <h2 class="block-title">
+            <span class="step">2</span> Что лежит в копилке
+          </h2>
+          <p class="note">
+            Нажмите на инструмент, чтобы прочитать подсказку. Нужные инструменты
+            перетащите в «Мой план» или нажмите «+».
+          </p>
+          <div class="legend">
+            <span class="badge badge-fast">результат в первую неделю</span>
+            <span class="badge badge-long">результат через время</span>
+          </div>
+          <div class="add-row">
+            <button class="btn" id="addBtn" type="button">
+              + Добавить свой инструмент
+            </button>
+            <button class="btn btn-light" id="exportBtn" type="button">
+              Скачать мои инструменты
+            </button>
+          </div>
+          <p class="note" id="addMessage"></p>
+          <div id="results"></div>
+        </section>
+      </div>
 
-            <section class="block">
-                <h2 class="block-title"><span class="step">1</span> Какие зоны западают?</h2>
-                <div class="zones" id="zones"></div>
-            </section>
+      <aside class="right">
+        <section class="plan" id="plan">
+          <h2 class="block-title">
+            <span class="step no-print">3</span> Мой план
+          </h2>
+          <p class="plan-empty no-print" id="planEmpty">
+            Перетащите сюда инструменты из копилки
+          </p>
+          <ol class="plan-list" id="planList"></ol>
 
-            <section class="block">
-                <h2 class="block-title"><span class="step">2</span> Что лежит в копилке</h2>
-                <p class="note">Нажмите на инструмент, чтобы прочитать подсказку. Нужные инструменты перетащите в «Мой план» или нажмите «+».</p>
-                <div class="legend">
-                    <span class="badge badge-fast">результат в первую неделю</span>
-                    <span class="badge badge-long">результат через время</span>
-                </div>
-                <div id="results"></div>
-            </section>
-
-        </div>
-
-        <aside class="right">
-            <section class="plan" id="plan">
-                <h2 class="block-title"><span class="step no-print">3</span> Мой план</h2>
-                <p class="plan-empty no-print" id="planEmpty">Перетащите сюда инструменты из копилки</p>
-                <ol class="plan-list" id="planList"></ol>
-
-                <div class="plan-buttons no-print">
-                    <button class="btn" id="copyBtn" type="button">Скопировать</button>
-                    <button class="btn" id="excelBtn" type="button">Сохранить в Excel</button>
-                    <button class="btn" id="printBtn" type="button">Распечатать</button>
-                    <button class="btn btn-light" id="clearBtn" type="button">Очистить</button>
-                </div>
-                <p class="plan-message no-print" id="planMessage"></p>
-            </section>
-        </aside>
-
+          <div class="plan-buttons no-print">
+            <button class="btn" id="copyBtn" type="button">Скопировать</button>
+            <button class="btn" id="excelBtn" type="button">
+              Сохранить в Excel
+            </button>
+            <button class="btn" id="printBtn" type="button">Распечатать</button>
+            <button class="btn btn-light" id="clearBtn" type="button">
+              Очистить
+            </button>
+          </div>
+          <p class="plan-message no-print" id="planMessage"></p>
+        </section>
+      </aside>
     </main>
 
+    <dialog class="dialog no-print" id="addDialog">
+      <form id="addForm">
+        <h2>Новый инструмент</h2>
+
+        <label class="field"
+          >Название
+          <input type="text" id="newName" maxlength="120" required />
+        </label>
+
+        <label class="field"
+          >Что это (описание)
+          <textarea id="newDescription" rows="3" required></textarea>
+        </label>
+
+        <label class="field"
+          >Как работать с инструментом
+          <textarea id="newHowTo" rows="3"></textarea>
+        </label>
+
+        <fieldset class="field">
+          <legend>Для каких зон подходит</legend>
+          <div class="zones" id="newZones"></div>
+        </fieldset>
+
+        <fieldset class="field">
+          <legend>Когда виден результат</legend>
+          <label class="radio"
+            ><input type="radio" name="newSpeed" value="fast" checked /> В
+            первую неделю</label
+          >
+          <label class="radio"
+            ><input type="radio" name="newSpeed" value="long" /> Через
+            время</label
+          >
+        </fieldset>
+
+        <p class="form-error" id="formError"></p>
+
+        <div class="dialog-buttons">
+          <button class="btn" type="submit">Сохранить</button>
+          <button class="btn btn-light" type="button" id="cancelBtn">
+            Отмена
+          </button>
+        </div>
+      </form>
+    </dialog>
+
     <script src="js/script.js"></script>
-</body>
+  </body>
 </html>

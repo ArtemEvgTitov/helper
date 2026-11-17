@@ -1,9 +1,11 @@
 // Копилка инструментов для управляющего магазином
 
-var zones = [];          // все зоны (KPI) из базы
-var tools = [];          // все инструменты из базы
-var selectedZones = [];  // id зон, которые отметил управляющий
-var plan = [];           // id инструментов, которые лежат в плане
+var zones = []; // все зоны (KPI) из базы
+var tools = []; // все инструменты: из базы + свои
+var baseTools = []; // инструменты из tools.json
+var customTools = []; // инструменты, которые добавил сам управляющий
+var selectedZones = []; // id зон, которые отметил управляющий
+var plan = []; // id инструментов, которые лежат в плане
 
 // Элементы страницы
 var loadBox = document.getElementById("loadBox");
@@ -20,528 +22,737 @@ var copyBtn = document.getElementById("copyBtn");
 var excelBtn = document.getElementById("excelBtn");
 var printBtn = document.getElementById("printBtn");
 var clearBtn = document.getElementById("clearBtn");
-
+var addBtn = document.getElementById("addBtn");
+var exportBtn = document.getElementById("exportBtn");
+var addMessage = document.getElementById("addMessage");
+var addDialog = document.getElementById("addDialog");
+var addForm = document.getElementById("addForm");
+var newZones = document.getElementById("newZones");
+var formError = document.getElementById("formError");
+var cancelBtn = document.getElementById("cancelBtn");
 
 // ---------- Загрузка базы инструментов ----------
 
 function loadData() {
-    fetch("data/tools.json")
-        .then(function (response) {
-            return response.json();
-        })
-        .then(function (data) {
-            startApp(data);
-        })
-        .catch(function () {
-            // Если страницу открыли просто как файл, браузер не даёт прочитать JSON.
-            // Тогда просим выбрать файл вручную.
-            loadBox.hidden = false;
-        });
+  fetch("data/tools.json")
+    .then(function (response) {
+      return response.json();
+    })
+    .then(function (data) {
+      startApp(data);
+    })
+    .catch(function () {
+      // Если страницу открыли просто как файл, браузер не даёт прочитать JSON.
+      // Тогда просим выбрать файл вручную.
+      loadBox.hidden = false;
+    });
 }
 
 // Ручная загрузка файла tools.json
 fileInput.addEventListener("change", function () {
-    var file = fileInput.files[0];
-    if (!file) {
-        return;
-    }
+  var file = fileInput.files[0];
+  if (!file) {
+    return;
+  }
 
-    var reader = new FileReader();
-    reader.onload = function () {
-        try {
-            var data = JSON.parse(reader.result);
-            startApp(data);
-        } catch (error) {
-            loadError.textContent = "Не получилось прочитать файл. Проверьте, что это tools.json и в нём нет ошибок.";
-        }
-    };
-    reader.readAsText(file);
+  var reader = new FileReader();
+  reader.onload = function () {
+    try {
+      var data = JSON.parse(reader.result);
+      startApp(data);
+    } catch (error) {
+      loadError.textContent =
+        "Не получилось прочитать файл. Проверьте, что это tools.json и в нём нет ошибок.";
+    }
+  };
+  reader.readAsText(file);
 });
 
 function startApp(data) {
-    zones = data.zones;
-    tools = data.tools;
+  zones = data.zones;
+  baseTools = data.tools;
+  customTools = loadCustomTools();
+  tools = baseTools.concat(customTools);
 
-    loadBox.hidden = true;
-    page.hidden = false;
+  loadBox.hidden = true;
+  page.hidden = false;
 
-    showZones();
-    showResults();
-    showPlan();
+  showZones();
+  showResults();
+  showPlan();
+  updateExportButton();
 }
-
 
 // ---------- Вспомогательные функции ----------
 
 // Поиск инструмента по id
 function findTool(id) {
-    for (var i = 0; i < tools.length; i++) {
-        if (tools[i].id == id) {
-            return tools[i];
-        }
+  for (var i = 0; i < tools.length; i++) {
+    if (tools[i].id == id) {
+      return tools[i];
     }
-    return null;
+  }
+  return null;
 }
 
 // Название зоны по её id
 function getZoneName(zoneId) {
-    for (var i = 0; i < zones.length; i++) {
-        if (zones[i].id == zoneId) {
-            return zones[i].name;
-        }
+  for (var i = 0; i < zones.length; i++) {
+    if (zones[i].id == zoneId) {
+      return zones[i].name;
     }
-    return zoneId;
+  }
+  return zoneId;
 }
 
 // Все зоны инструмента одной строкой
 function getZonesText(tool) {
-    var names = [];
-    for (var i = 0; i < tool.zones.length; i++) {
-        names.push(getZoneName(tool.zones[i]));
-    }
-    return names.join(", ");
+  var names = [];
+  for (var i = 0; i < tool.zones.length; i++) {
+    names.push(getZoneName(tool.zones[i]));
+  }
+  return names.join(", ");
 }
 
 function getSpeedText(tool) {
-    if (tool.speed == "fast") {
-        return "результат в первую неделю";
-    }
-    return "результат через время";
+  if (tool.speed == "fast") {
+    return "результат в первую неделю";
+  }
+  return "результат через время";
 }
 
 // Сортировка: сначала быстрые инструменты, потом долгие
 function sortBySpeed(list) {
-    var fast = [];
-    var long = [];
-    for (var i = 0; i < list.length; i++) {
-        if (list[i].speed == "fast") {
-            fast.push(list[i]);
-        } else {
-            long.push(list[i]);
-        }
+  var fast = [];
+  var long = [];
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].speed == "fast") {
+      fast.push(list[i]);
+    } else {
+      long.push(list[i]);
     }
-    return fast.concat(long);
+  }
+  return fast.concat(long);
 }
 
 function makeBadge(tool) {
-    var badge = document.createElement("span");
-    badge.className = "badge badge-" + tool.speed;
-    badge.textContent = getSpeedText(tool);
-    return badge;
+  var badge = document.createElement("span");
+  badge.className = "badge badge-" + tool.speed;
+  badge.textContent = getSpeedText(tool);
+  return badge;
 }
-
 
 // ---------- Шаг 1. Зоны ----------
 
 function showZones() {
-    zonesBox.innerHTML = "";
+  zonesBox.innerHTML = "";
 
-    for (var i = 0; i < zones.length; i++) {
-        var label = document.createElement("label");
-        label.className = "zone";
+  for (var i = 0; i < zones.length; i++) {
+    var label = document.createElement("label");
+    label.className = "zone";
 
-        var checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.value = zones[i].id;
-        checkbox.addEventListener("change", changeZones);
+    var checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = zones[i].id;
+    checkbox.addEventListener("change", changeZones);
 
-        var text = document.createElement("span");
-        text.textContent = zones[i].name;
+    var text = document.createElement("span");
+    text.textContent = zones[i].name;
 
-        label.appendChild(checkbox);
-        label.appendChild(text);
-        zonesBox.appendChild(label);
-    }
+    label.appendChild(checkbox);
+    label.appendChild(text);
+    zonesBox.appendChild(label);
+  }
 }
 
 // Собираем заново список отмеченных зон
 function changeZones() {
-    selectedZones = [];
-    var checkboxes = zonesBox.querySelectorAll("input");
+  selectedZones = [];
+  var checkboxes = zonesBox.querySelectorAll("input");
 
-    for (var i = 0; i < checkboxes.length; i++) {
-        if (checkboxes[i].checked) {
-            selectedZones.push(checkboxes[i].value);
-        }
+  for (var i = 0; i < checkboxes.length; i++) {
+    if (checkboxes[i].checked) {
+      selectedZones.push(checkboxes[i].value);
     }
+  }
 
-    showResults();
+  showResults();
 }
-
 
 // ---------- Шаг 2. Инструменты из копилки ----------
 
 function showResults() {
-    resultsBox.innerHTML = "";
+  resultsBox.innerHTML = "";
 
-    if (selectedZones.length == 0) {
-        var empty = document.createElement("p");
-        empty.className = "results-empty";
-        empty.textContent = "Копилка пока закрыта. Отметьте хотя бы одну зону выше.";
-        resultsBox.appendChild(empty);
-        return;
+  if (selectedZones.length == 0) {
+    var empty = document.createElement("p");
+    empty.className = "results-empty";
+    empty.textContent =
+      "Копилка пока закрыта. Отметьте хотя бы одну зону выше.";
+    resultsBox.appendChild(empty);
+    return;
+  }
+
+  for (var i = 0; i < zones.length; i++) {
+    var zone = zones[i];
+
+    if (selectedZones.indexOf(zone.id) == -1) {
+      continue;
     }
 
-    for (var i = 0; i < zones.length; i++) {
-        var zone = zones[i];
+    // Ищем инструменты, которые подходят для этой зоны
+    var zoneTools = [];
+    for (var j = 0; j < tools.length; j++) {
+      if (tools[j].zones.indexOf(zone.id) != -1) {
+        zoneTools.push(tools[j]);
+      }
+    }
+    zoneTools = sortBySpeed(zoneTools);
 
-        if (selectedZones.indexOf(zone.id) == -1) {
-            continue;
-        }
+    var group = document.createElement("div");
+    group.className = "group";
 
-        // Ищем инструменты, которые подходят для этой зоны
-        var zoneTools = [];
-        for (var j = 0; j < tools.length; j++) {
-            if (tools[j].zones.indexOf(zone.id) != -1) {
-                zoneTools.push(tools[j]);
-            }
-        }
-        zoneTools = sortBySpeed(zoneTools);
+    var title = document.createElement("h3");
+    title.className = "group-title";
+    title.textContent = zone.title + " ";
 
-        var group = document.createElement("div");
-        group.className = "group";
+    var count = document.createElement("span");
+    count.className = "group-count";
+    count.textContent = "(" + zoneTools.length + ")";
+    title.appendChild(count);
 
-        var title = document.createElement("h3");
-        title.className = "group-title";
-        title.textContent = zone.title + " ";
+    group.appendChild(title);
 
-        var count = document.createElement("span");
-        count.className = "group-count";
-        count.textContent = "(" + zoneTools.length + ")";
-        title.appendChild(count);
-
-        group.appendChild(title);
-
-        for (var k = 0; k < zoneTools.length; k++) {
-            group.appendChild(makeToolCard(zoneTools[k]));
-        }
-
-        resultsBox.appendChild(group);
+    for (var k = 0; k < zoneTools.length; k++) {
+      group.appendChild(makeToolCard(zoneTools[k]));
     }
 
-    markToolsInPlan();
+    resultsBox.appendChild(group);
+  }
+
+  markToolsInPlan();
 }
 
 // Карточка одного инструмента
 function makeToolCard(tool) {
-    var card = document.createElement("div");
-    card.className = "tool";
-    card.draggable = true;
-    card.tabIndex = 0;
-    card.setAttribute("data-id", tool.id);
+  var card = document.createElement("div");
+  card.className = "tool";
+  card.draggable = true;
+  card.tabIndex = 0;
+  card.setAttribute("data-id", tool.id);
 
-    var top = document.createElement("div");
-    top.className = "tool-top";
+  var top = document.createElement("div");
+  top.className = "tool-top";
 
-    var name = document.createElement("span");
-    name.className = "tool-name";
-    name.textContent = tool.name;
+  var name = document.createElement("span");
+  name.className = "tool-name";
+  name.textContent = tool.name;
 
-    var addBtn = document.createElement("button");
-    addBtn.className = "tool-add";
-    addBtn.type = "button";
-    addBtn.textContent = "+";
-    addBtn.title = "Добавить в план";
+  var addBtn = document.createElement("button");
+  addBtn.className = "tool-add";
+  addBtn.type = "button";
+  addBtn.textContent = "+";
+  addBtn.title = "Добавить в план";
 
-    top.appendChild(name);
-    top.appendChild(makeBadge(tool));
-    top.appendChild(addBtn);
+  top.appendChild(name);
+  if (tool.custom) {
+    var own = document.createElement("span");
+    own.className = "badge badge-custom";
+    own.textContent = "свой";
+    top.appendChild(own);
+  }
+  top.appendChild(makeBadge(tool));
+  top.appendChild(addBtn);
 
-    // Подсказка, сначала скрыта
-    var hint = document.createElement("div");
-    hint.className = "hint";
-    hint.hidden = true;
+  // Подсказка, сначала скрыта
+  var hint = document.createElement("div");
+  hint.className = "hint";
+  hint.hidden = true;
 
-    var p1 = document.createElement("p");
-    p1.innerHTML = "<b>Что это:</b> ";
-    p1.appendChild(document.createTextNode(tool.description));
+  var p1 = document.createElement("p");
+  p1.innerHTML = "<b>Что это:</b> ";
+  p1.appendChild(document.createTextNode(tool.description));
 
-    var p2 = document.createElement("p");
-    p2.innerHTML = "<b>Как работать:</b> ";
-    p2.appendChild(document.createTextNode(tool.howTo));
+  var p2 = document.createElement("p");
+  p2.innerHTML = "<b>Как работать:</b> ";
+  p2.appendChild(document.createTextNode(tool.howTo));
 
-    var p3 = document.createElement("p");
-    p3.innerHTML = "<b>Подходит для:</b> ";
-    p3.appendChild(document.createTextNode(getZonesText(tool)));
+  var p3 = document.createElement("p");
+  p3.innerHTML = "<b>Подходит для:</b> ";
+  p3.appendChild(document.createTextNode(getZonesText(tool)));
 
-    hint.appendChild(p1);
-    hint.appendChild(p2);
-    hint.appendChild(p3);
+  hint.appendChild(p1);
+  hint.appendChild(p2);
+  hint.appendChild(p3);
 
-    card.appendChild(top);
-    card.appendChild(hint);
-
-    // Нажатие на инструмент открывает и закрывает подсказку
-    top.addEventListener("click", function () {
-        hint.hidden = !hint.hidden;
+  // Свои инструменты можно удалить
+  if (tool.custom) {
+    var deleteBtn = document.createElement("button");
+    deleteBtn.className = "hint-delete";
+    deleteBtn.type = "button";
+    deleteBtn.textContent = "Удалить этот инструмент";
+    deleteBtn.addEventListener("click", function () {
+      deleteCustomTool(tool.id);
     });
+    hint.appendChild(deleteBtn);
+  }
 
-    card.addEventListener("keydown", function (event) {
-        if (event.key == "Enter" && event.target == card) {
-            hint.hidden = !hint.hidden;
-        }
-    });
+  card.appendChild(top);
+  card.appendChild(hint);
 
-    // Кнопка "+" для тех, кому неудобно перетаскивать (например, с телефона)
-    addBtn.addEventListener("click", function (event) {
-        event.stopPropagation();
-        addToPlan(tool.id);
-    });
+  // Нажатие на инструмент открывает и закрывает подсказку
+  top.addEventListener("click", function () {
+    hint.hidden = !hint.hidden;
+  });
 
-    // Начало перетаскивания: запоминаем id инструмента
-    card.addEventListener("dragstart", function (event) {
-        event.dataTransfer.setData("text/plain", tool.id);
-    });
+  card.addEventListener("keydown", function (event) {
+    if (event.key == "Enter" && event.target == card) {
+      hint.hidden = !hint.hidden;
+    }
+  });
 
-    return card;
+  // Кнопка "+" для тех, кому неудобно перетаскивать (например, с телефона)
+  addBtn.addEventListener("click", function (event) {
+    event.stopPropagation();
+    addToPlan(tool.id);
+  });
+
+  // Начало перетаскивания: запоминаем id инструмента
+  card.addEventListener("dragstart", function (event) {
+    event.dataTransfer.setData("text/plain", tool.id);
+  });
+
+  return card;
 }
 
 // Делаем бледными инструменты, которые уже есть в плане
 function markToolsInPlan() {
-    var cards = resultsBox.querySelectorAll(".tool");
+  var cards = resultsBox.querySelectorAll(".tool");
 
-    for (var i = 0; i < cards.length; i++) {
-        var id = Number(cards[i].getAttribute("data-id"));
+  for (var i = 0; i < cards.length; i++) {
+    var id = Number(cards[i].getAttribute("data-id"));
 
-        if (plan.indexOf(id) != -1) {
-            cards[i].classList.add("tool-in-plan");
-        } else {
-            cards[i].classList.remove("tool-in-plan");
-        }
+    if (plan.indexOf(id) != -1) {
+      cards[i].classList.add("tool-in-plan");
+    } else {
+      cards[i].classList.remove("tool-in-plan");
     }
+  }
 }
-
 
 // ---------- Шаг 3. Мой план ----------
 
 function addToPlan(id) {
-    id = Number(id);
+  id = Number(id);
 
-    if (findTool(id) == null) {
-        return;
-    }
+  if (findTool(id) == null) {
+    return;
+  }
 
-    if (plan.indexOf(id) != -1) {
-        showMessage("Этот инструмент уже в плане");
-        return;
-    }
+  if (plan.indexOf(id) != -1) {
+    showMessage("Этот инструмент уже в плане");
+    return;
+  }
 
-    plan.push(id);
-    showPlan();
-    markToolsInPlan();
+  plan.push(id);
+  showPlan();
+  markToolsInPlan();
 }
 
 function removeFromPlan(id) {
-    var index = plan.indexOf(id);
-    if (index != -1) {
-        plan.splice(index, 1);
-    }
-    showPlan();
-    markToolsInPlan();
+  var index = plan.indexOf(id);
+  if (index != -1) {
+    plan.splice(index, 1);
+  }
+  showPlan();
+  markToolsInPlan();
 }
 
 // Инструменты плана, отсортированные от быстрых к долгим
 function getPlanTools() {
-    var list = [];
-    for (var i = 0; i < plan.length; i++) {
-        list.push(findTool(plan[i]));
-    }
-    return sortBySpeed(list);
+  var list = [];
+  for (var i = 0; i < plan.length; i++) {
+    list.push(findTool(plan[i]));
+  }
+  return sortBySpeed(list);
 }
 
 function showPlan() {
-    planList.innerHTML = "";
+  planList.innerHTML = "";
 
-    var list = getPlanTools();
+  var list = getPlanTools();
 
-    for (var i = 0; i < list.length; i++) {
-        planList.appendChild(makePlanItem(list[i]));
-    }
+  for (var i = 0; i < list.length; i++) {
+    planList.appendChild(makePlanItem(list[i]));
+  }
 
-    var isEmpty = list.length == 0;
-    planEmpty.hidden = !isEmpty;
-    copyBtn.disabled = isEmpty;
-    excelBtn.disabled = isEmpty;
-    printBtn.disabled = isEmpty;
-    clearBtn.disabled = isEmpty;
+  var isEmpty = list.length == 0;
+  planEmpty.hidden = !isEmpty;
+  copyBtn.disabled = isEmpty;
+  excelBtn.disabled = isEmpty;
+  printBtn.disabled = isEmpty;
+  clearBtn.disabled = isEmpty;
 }
 
 function makePlanItem(tool) {
-    var item = document.createElement("li");
-    item.className = "plan-item";
+  var item = document.createElement("li");
+  item.className = "plan-item";
 
-    var name = document.createElement("p");
-    name.className = "plan-name";
-    name.textContent = tool.name;
+  var name = document.createElement("p");
+  name.className = "plan-name";
+  name.textContent = tool.name;
 
-    var zonesText = document.createElement("p");
-    zonesText.className = "plan-zones";
-    zonesText.textContent = "Для чего: " + getZonesText(tool);
+  var zonesText = document.createElement("p");
+  zonesText.className = "plan-zones";
+  zonesText.textContent = "Для чего: " + getZonesText(tool);
 
-    // Эти два абзаца видны только при печати
-    var description = document.createElement("p");
-    description.className = "plan-details";
-    description.textContent = "Что это: " + tool.description;
+  // Эти два абзаца видны только при печати
+  var description = document.createElement("p");
+  description.className = "plan-details";
+  description.textContent = "Что это: " + tool.description;
 
-    var howTo = document.createElement("p");
-    howTo.className = "plan-details";
-    howTo.textContent = "Как работать: " + tool.howTo;
+  var howTo = document.createElement("p");
+  howTo.className = "plan-details";
+  howTo.textContent = "Как работать: " + tool.howTo;
 
-    var removeBtn = document.createElement("button");
-    removeBtn.className = "plan-remove no-print";
-    removeBtn.type = "button";
-    removeBtn.textContent = "×";
-    removeBtn.title = "Убрать из плана";
-    removeBtn.addEventListener("click", function () {
-        removeFromPlan(tool.id);
-    });
+  var removeBtn = document.createElement("button");
+  removeBtn.className = "plan-remove no-print";
+  removeBtn.type = "button";
+  removeBtn.textContent = "×";
+  removeBtn.title = "Убрать из плана";
+  removeBtn.addEventListener("click", function () {
+    removeFromPlan(tool.id);
+  });
 
-    item.appendChild(name);
-    item.appendChild(makeBadge(tool));
-    item.appendChild(zonesText);
-    item.appendChild(description);
-    item.appendChild(howTo);
-    item.appendChild(removeBtn);
+  item.appendChild(name);
+  item.appendChild(makeBadge(tool));
+  item.appendChild(zonesText);
+  item.appendChild(description);
+  item.appendChild(howTo);
+  item.appendChild(removeBtn);
 
-    return item;
+  return item;
 }
 
 // Перетаскивание в область плана
 planBox.addEventListener("dragover", function (event) {
-    event.preventDefault(); // без этого браузер не разрешит бросить элемент
-    planBox.classList.add("plan-over");
+  event.preventDefault(); // без этого браузер не разрешит бросить элемент
+  planBox.classList.add("plan-over");
 });
 
 planBox.addEventListener("dragleave", function () {
-    planBox.classList.remove("plan-over");
+  planBox.classList.remove("plan-over");
 });
 
 planBox.addEventListener("drop", function (event) {
-    event.preventDefault();
-    planBox.classList.remove("plan-over");
+  event.preventDefault();
+  planBox.classList.remove("plan-over");
 
-    var id = event.dataTransfer.getData("text/plain");
-    addToPlan(id);
+  var id = event.dataTransfer.getData("text/plain");
+  addToPlan(id);
 });
 
 // Короткое сообщение под кнопками, само пропадает через 3 секунды
 function showMessage(text) {
-    planMessage.textContent = text;
-    setTimeout(function () {
-        if (planMessage.textContent == text) {
-            planMessage.textContent = "";
-        }
-    }, 3000);
+  planMessage.textContent = text;
+  setTimeout(function () {
+    if (planMessage.textContent == text) {
+      planMessage.textContent = "";
+    }
+  }, 3000);
 }
-
 
 // ---------- Кнопки плана ----------
 
 // Скопировать в буфер обмена
 copyBtn.addEventListener("click", function () {
-    var list = getPlanTools();
-    var text = "Мой план\n\n";
+  var list = getPlanTools();
+  var text = "Мой план\n\n";
 
-    for (var i = 0; i < list.length; i++) {
-        text += (i + 1) + ". " + list[i].name + " (" + getSpeedText(list[i]) + ")\n";
-        text += "   Для чего: " + getZonesText(list[i]) + "\n";
-        text += "   Как работать: " + list[i].howTo + "\n\n";
-    }
+  for (var i = 0; i < list.length; i++) {
+    text += i + 1 + ". " + list[i].name + " (" + getSpeedText(list[i]) + ")\n";
+    text += "   Для чего: " + getZonesText(list[i]) + "\n";
+    text += "   Как работать: " + list[i].howTo + "\n\n";
+  }
 
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(text)
-            .then(function () {
-                showMessage("Скопировано в буфер обмена");
-            })
-            .catch(function () {
-                copyOldWay(text);
-            });
-    } else {
+  if (navigator.clipboard) {
+    navigator.clipboard
+      .writeText(text)
+      .then(function () {
+        showMessage("Скопировано в буфер обмена");
+      })
+      .catch(function () {
         copyOldWay(text);
-    }
+      });
+  } else {
+    copyOldWay(text);
+  }
 });
 
 // Запасной способ копирования для старых браузеров
 function copyOldWay(text) {
-    var area = document.createElement("textarea");
-    area.value = text;
-    document.body.appendChild(area);
-    area.select();
+  var area = document.createElement("textarea");
+  area.value = text;
+  document.body.appendChild(area);
+  area.select();
 
-    var ok = document.execCommand("copy");
-    document.body.removeChild(area);
+  var ok = document.execCommand("copy");
+  document.body.removeChild(area);
 
-    if (ok) {
-        showMessage("Скопировано в буфер обмена");
-    } else {
-        showMessage("Не получилось скопировать");
-    }
+  if (ok) {
+    showMessage("Скопировано в буфер обмена");
+  } else {
+    showMessage("Не получилось скопировать");
+  }
 }
 
 // Заменяем символы, которые могут сломать таблицу
 function safeText(text) {
-    return String(text)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 // Сохранить как файл Excel.
 // Excel умеет открывать обычную HTML-таблицу, сохранённую с расширением .xls
 excelBtn.addEventListener("click", function () {
-    var list = getPlanTools();
+  var list = getPlanTools();
 
-    var table = "<table border='1'>";
+  var table = "<table border='1'>";
+  table += "<tr>";
+  table += "<th>№</th>";
+  table += "<th>Инструмент</th>";
+  table += "<th>Для каких зон</th>";
+  table += "<th>Скорость результата</th>";
+  table += "<th>Описание</th>";
+  table += "<th>Как работать</th>";
+  table += "</tr>";
+
+  for (var i = 0; i < list.length; i++) {
     table += "<tr>";
-    table += "<th>№</th>";
-    table += "<th>Инструмент</th>";
-    table += "<th>Для каких зон</th>";
-    table += "<th>Скорость результата</th>";
-    table += "<th>Описание</th>";
-    table += "<th>Как работать</th>";
+    table += "<td>" + (i + 1) + "</td>";
+    table += "<td>" + safeText(list[i].name) + "</td>";
+    table += "<td>" + safeText(getZonesText(list[i])) + "</td>";
+    table += "<td>" + getSpeedText(list[i]) + "</td>";
+    table += "<td>" + safeText(list[i].description) + "</td>";
+    table += "<td>" + safeText(list[i].howTo) + "</td>";
     table += "</tr>";
+  }
 
-    for (var i = 0; i < list.length; i++) {
-        table += "<tr>";
-        table += "<td>" + (i + 1) + "</td>";
-        table += "<td>" + safeText(list[i].name) + "</td>";
-        table += "<td>" + safeText(getZonesText(list[i])) + "</td>";
-        table += "<td>" + getSpeedText(list[i]) + "</td>";
-        table += "<td>" + safeText(list[i].description) + "</td>";
-        table += "<td>" + safeText(list[i].howTo) + "</td>";
-        table += "</tr>";
-    }
+  table += "</table>";
 
-    table += "</table>";
+  var html =
+    "<html><head><meta charset='UTF-8'></head><body>" +
+    table +
+    "</body></html>";
 
-    var html = "<html><head><meta charset='UTF-8'></head><body>" + table + "</body></html>";
+  // "﻿" нужен, чтобы Excel правильно показал русские буквы
+  var blob = new Blob(["﻿" + html], { type: "application/vnd.ms-excel" });
+  var url = URL.createObjectURL(blob);
 
-    // "﻿" нужен, чтобы Excel правильно показал русские буквы
-    var blob = new Blob(["﻿" + html], { type: "application/vnd.ms-excel" });
-    var url = URL.createObjectURL(blob);
+  var link = document.createElement("a");
+  link.href = url;
+  link.download = "plan-instrumentov.xls";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 
-    var link = document.createElement("a");
-    link.href = url;
-    link.download = "plan-instrumentov.xls";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    showMessage("Файл сохранён");
+  showMessage("Файл сохранён");
 });
 
 // Распечатать (то же самое, что Ctrl+P)
 printBtn.addEventListener("click", function () {
-    window.print();
+  window.print();
 });
 
 clearBtn.addEventListener("click", function () {
-    plan = [];
-    showPlan();
-    markToolsInPlan();
+  plan = [];
+  showPlan();
+  markToolsInPlan();
 });
 
+// ---------- Свои инструменты ----------
+// Страница лежит на GitHub Pages, а там нельзя записать файл на сервер.
+// Поэтому свои инструменты хранятся в самом браузере (localStorage)
+// и остаются там, пока управляющий не очистит данные сайта.
+
+function loadCustomTools() {
+  try {
+    var saved = localStorage.getItem("customTools");
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (error) {
+    // если хранилище недоступно, просто работаем без своих инструментов
+  }
+  return [];
+}
+
+// Возвращает true, если получилось сохранить
+function saveCustomTools() {
+  try {
+    localStorage.setItem("customTools", JSON.stringify(customTools));
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+function updateExportButton() {
+  exportBtn.disabled = customTools.length == 0;
+}
+
+// Открыть окно: чистим форму и рисуем чекбоксы зон
+addBtn.addEventListener("click", function () {
+  addForm.reset();
+  formError.textContent = "";
+  newZones.innerHTML = "";
+
+  for (var i = 0; i < zones.length; i++) {
+    var label = document.createElement("label");
+    label.className = "zone";
+
+    var checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = zones[i].id;
+
+    var text = document.createElement("span");
+    text.textContent = zones[i].name;
+
+    label.appendChild(checkbox);
+    label.appendChild(text);
+    newZones.appendChild(label);
+  }
+
+  addDialog.showModal();
+});
+
+cancelBtn.addEventListener("click", function () {
+  addDialog.close();
+});
+
+// Сохранение нового инструмента
+addForm.addEventListener("submit", function (event) {
+  event.preventDefault();
+
+  var name = document.getElementById("newName").value.trim();
+  var description = document.getElementById("newDescription").value.trim();
+  var howTo = document.getElementById("newHowTo").value.trim();
+  var speed = addForm.elements["newSpeed"].value;
+
+  var chosenZones = [];
+  var checkboxes = newZones.querySelectorAll("input");
+  for (var i = 0; i < checkboxes.length; i++) {
+    if (checkboxes[i].checked) {
+      chosenZones.push(checkboxes[i].value);
+    }
+  }
+
+  if (name == "" || description == "") {
+    formError.textContent = "Заполните название и описание.";
+    return;
+  }
+  if (chosenZones.length == 0) {
+    formError.textContent = "Отметьте хотя бы одну зону.";
+    return;
+  }
+
+  var newTool = {
+    id: Date.now(),
+    name: name,
+    description: description,
+    howTo: howTo == "" ? "Описание не добавлено." : howTo,
+    zones: chosenZones,
+    speed: speed,
+    custom: true,
+  };
+
+  customTools.push(newTool);
+  tools = baseTools.concat(customTools);
+
+  if (!saveCustomTools()) {
+    addMessage.textContent =
+      "Инструмент добавлен, но браузер не даёт его сохранить. После обновления страницы он пропадёт.";
+  } else {
+    addMessage.textContent =
+      "Инструмент «" +
+      name +
+      "» добавлен. Он виден в зонах: " +
+      getZonesText(newTool) +
+      ".";
+  }
+
+  addDialog.close();
+  updateExportButton();
+  showResults();
+});
+
+function deleteCustomTool(id) {
+  if (!confirm("Удалить этот инструмент?")) {
+    return;
+  }
+
+  for (var i = 0; i < customTools.length; i++) {
+    if (customTools[i].id == id) {
+      customTools.splice(i, 1);
+      break;
+    }
+  }
+
+  var planIndex = plan.indexOf(id);
+  if (planIndex != -1) {
+    plan.splice(planIndex, 1);
+  }
+
+  tools = baseTools.concat(customTools);
+  saveCustomTools();
+  addMessage.textContent = "Инструмент удалён.";
+  updateExportButton();
+  showResults();
+  showPlan();
+}
+
+// Скачать свои инструменты в том же формате, что и tools.json.
+// Содержимое файла можно вставить в массив "tools" в data/tools.json на GitHub,
+// тогда инструменты увидят все.
+exportBtn.addEventListener("click", function () {
+  var lastId = 0;
+  for (var i = 0; i < baseTools.length; i++) {
+    if (baseTools[i].id > lastId) {
+      lastId = baseTools[i].id;
+    }
+  }
+
+  var list = [];
+  for (var j = 0; j < customTools.length; j++) {
+    lastId++;
+    list.push({
+      id: lastId,
+      name: customTools[j].name,
+      description: customTools[j].description,
+      howTo: customTools[j].howTo,
+      zones: customTools[j].zones,
+      speed: customTools[j].speed,
+    });
+  }
+
+  var text = JSON.stringify({ tools: list }, null, 2);
+  var blob = new Blob([text], { type: "application/json" });
+  var url = URL.createObjectURL(blob);
+
+  var link = document.createElement("a");
+  link.href = url;
+  link.download = "moi-instrumenty.json";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+
+  addMessage.textContent =
+    "Файл скачан. Чтобы инструменты появились у всех, добавьте его содержимое в data/tools.json.";
+});
 
 // Запуск
 loadData();

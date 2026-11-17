@@ -1,511 +1,621 @@
 /* Цвета сайта */
 :root {
-    --color-1: #DAF1DE;
-    --color-2: #8EB69B;
-    --color-3: #235347;
-    --color-4: #163832;
-    --color-5: #0B2B26;
-    --color-6: #051F20;
+  --color-1: #daf1de;
+  --color-2: #8eb69b;
+  --color-3: #235347;
+  --color-4: #163832;
+  --color-5: #0b2b26;
+  --color-6: #051f20;
 }
 
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 /* Чтобы атрибут hidden работал даже у блоков с display: grid */
 [hidden] {
-    display: none !important;
+  display: none !important;
 }
 
 body {
-    margin: 0;
-    padding: 0 20px 40px;
-    background-color: var(--color-6);
-    color: var(--color-1);
-    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-    font-size: 16px;
-    line-height: 1.45;
+  margin: 0;
+  padding: 0 20px 40px;
+  background-color: var(--color-6);
+  color: var(--color-1);
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
 }
 
 /* ---------- Шапка ---------- */
 
 .header {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 36px 0 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 36px 0 24px;
 }
 
 .header-title {
-    margin: 0 0 8px;
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 40px;
-    font-weight: normal;
-    color: var(--color-1);
+  margin: 0 0 8px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 40px;
+  font-weight: normal;
+  color: var(--color-1);
 }
 
 .header-text {
-    margin: 0;
-    max-width: 620px;
-    color: var(--color-2);
+  margin: 0;
+  max-width: 620px;
+  color: var(--color-2);
 }
 
 /* ---------- Сетка страницы ---------- */
 
 .page {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr 380px;
-    gap: 24px;
-    align-items: start;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+  align-items: start;
 }
 
 .block {
-    background-color: var(--color-5);
-    border: 1px solid var(--color-3);
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 24px;
+  background-color: var(--color-5);
+  border: 1px solid var(--color-3);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 24px;
 }
 
 .block-title {
-    margin: 0 0 14px;
-    font-size: 20px;
-    font-weight: 600;
+  margin: 0 0 14px;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .step {
-    display: inline-block;
-    width: 28px;
-    height: 28px;
-    margin-right: 6px;
-    border-radius: 50%;
-    background-color: var(--color-2);
-    color: var(--color-6);
-    font-size: 15px;
-    line-height: 28px;
-    text-align: center;
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background-color: var(--color-2);
+  color: var(--color-6);
+  font-size: 15px;
+  line-height: 28px;
+  text-align: center;
 }
 
 .note {
-    margin: 0 0 12px;
-    color: var(--color-2);
-    font-size: 14px;
+  margin: 0 0 12px;
+  color: var(--color-2);
+  font-size: 14px;
 }
 
 /* ---------- Зоны (KPI) ---------- */
 
 .zones {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .zone {
-    position: relative;
-    cursor: pointer;
+  position: relative;
+  cursor: pointer;
 }
 
 /* Сам чекбокс прячем, вместо него красим надпись */
 .zone input {
-    position: absolute;
-    opacity: 0;
+  position: absolute;
+  opacity: 0;
 }
 
 .zone span {
-    display: block;
-    padding: 9px 16px;
-    border: 1px solid var(--color-3);
-    border-radius: 30px;
-    background-color: var(--color-4);
-    transition: background-color 0.2s;
+  display: block;
+  padding: 9px 16px;
+  border: 1px solid var(--color-3);
+  border-radius: 30px;
+  background-color: var(--color-4);
+  transition: background-color 0.2s;
 }
 
 .zone span:hover {
-    border-color: var(--color-2);
+  border-color: var(--color-2);
 }
 
 .zone input:checked + span {
-    background-color: var(--color-2);
-    border-color: var(--color-2);
-    color: var(--color-6);
-    font-weight: 600;
+  background-color: var(--color-2);
+  border-color: var(--color-2);
+  color: var(--color-6);
+  font-weight: 600;
 }
 
 .zone input:focus-visible + span {
-    outline: 2px solid var(--color-1);
-    outline-offset: 2px;
+  outline: 2px solid var(--color-1);
+  outline-offset: 2px;
 }
 
 /* ---------- Метки скорости ---------- */
 
 .legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 .badge {
-    display: inline-block;
-    padding: 2px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    white-space: nowrap;
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .badge-fast {
-    background-color: var(--color-2);
-    color: var(--color-6);
-    border: 1px solid var(--color-2);
+  background-color: var(--color-2);
+  color: var(--color-6);
+  border: 1px solid var(--color-2);
 }
 
 .badge-long {
-    background-color: transparent;
-    color: var(--color-2);
-    border: 1px dashed var(--color-2);
+  background-color: transparent;
+  color: var(--color-2);
+  border: 1px dashed var(--color-2);
 }
 
 /* ---------- Список инструментов ---------- */
 
 .results-empty {
-    margin: 0;
-    padding: 30px 10px;
-    border: 2px dashed var(--color-3);
-    border-radius: 12px;
-    color: var(--color-2);
-    text-align: center;
+  margin: 0;
+  padding: 30px 10px;
+  border: 2px dashed var(--color-3);
+  border-radius: 12px;
+  color: var(--color-2);
+  text-align: center;
 }
 
 .group {
-    margin-bottom: 22px;
+  margin-bottom: 22px;
 }
 
 .group:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .group-title {
-    margin: 0 0 10px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--color-3);
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 20px;
-    font-weight: normal;
+  margin: 0 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--color-3);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 20px;
+  font-weight: normal;
 }
 
 .group-count {
-    color: var(--color-2);
-    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-    font-size: 14px;
+  color: var(--color-2);
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  font-size: 14px;
 }
 
 .tool {
-    margin-bottom: 8px;
-    padding: 10px 12px;
-    background-color: var(--color-4);
-    border: 1px solid var(--color-3);
-    border-radius: 10px;
-    cursor: grab;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  background-color: var(--color-4);
+  border: 1px solid var(--color-3);
+  border-radius: 10px;
+  cursor: grab;
 }
 
 .tool:hover {
-    border-color: var(--color-2);
+  border-color: var(--color-2);
 }
 
 .tool:focus-visible {
-    outline: 2px solid var(--color-1);
-    outline-offset: 2px;
+  outline: 2px solid var(--color-1);
+  outline-offset: 2px;
 }
 
 .tool-top {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .tool-name {
-    flex-grow: 1;
+  flex-grow: 1;
 }
 
 .tool-add {
-    flex-shrink: 0;
-    width: 30px;
-    height: 30px;
-    border: 1px solid var(--color-2);
-    border-radius: 50%;
-    background-color: transparent;
-    color: var(--color-1);
-    font-size: 18px;
-    line-height: 1;
-    cursor: pointer;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--color-2);
+  border-radius: 50%;
+  background-color: transparent;
+  color: var(--color-1);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
 }
 
 .tool-add:hover {
-    background-color: var(--color-2);
-    color: var(--color-6);
+  background-color: var(--color-2);
+  color: var(--color-6);
 }
 
 /* Инструмент, который уже лежит в плане */
 .tool-in-plan .tool-top {
-    opacity: 0.55;
+  opacity: 0.55;
 }
 
 .tool-in-plan .tool-add {
-    background-color: var(--color-2);
-    color: var(--color-6);
+  background-color: var(--color-2);
+  color: var(--color-6);
 }
 
 /* Подсказка с описанием */
 .hint {
-    margin-top: 10px;
-    padding: 12px;
-    background-color: var(--color-1);
-    color: var(--color-6);
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: default;
+  margin-top: 10px;
+  padding: 12px;
+  background-color: var(--color-1);
+  color: var(--color-6);
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: default;
 }
 
 .hint p {
-    margin: 0 0 8px;
+  margin: 0 0 8px;
 }
 
 .hint p:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 /* ---------- Мой план ---------- */
 
 .right {
-    position: sticky;
-    top: 20px;
+  position: sticky;
+  top: 20px;
 }
 
 .plan {
-    background-color: var(--color-3);
-    border: 2px dashed var(--color-2);
-    border-radius: 14px;
-    padding: 20px;
+  background-color: var(--color-3);
+  border: 2px dashed var(--color-2);
+  border-radius: 14px;
+  padding: 20px;
 }
 
 /* Подсветка, когда над планом держат инструмент */
 .plan-over {
-    background-color: var(--color-4);
-    border-style: solid;
-    border-color: var(--color-1);
+  background-color: var(--color-4);
+  border-style: solid;
+  border-color: var(--color-1);
 }
 
 .plan-empty {
-    margin: 0 0 16px;
-    padding: 34px 10px;
-    color: var(--color-1);
-    text-align: center;
-    opacity: 0.8;
+  margin: 0 0 16px;
+  padding: 34px 10px;
+  color: var(--color-1);
+  text-align: center;
+  opacity: 0.8;
 }
 
 .plan-list {
-    margin: 0 0 16px;
-    padding: 0;
-    list-style: none;
-    counter-reset: plan;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+  counter-reset: plan;
 }
 
 .plan-item {
-    position: relative;
-    margin-bottom: 8px;
-    padding: 10px 36px 10px 12px;
-    background-color: var(--color-5);
-    border-radius: 10px;
-    counter-increment: plan;
+  position: relative;
+  margin-bottom: 8px;
+  padding: 10px 36px 10px 12px;
+  background-color: var(--color-5);
+  border-radius: 10px;
+  counter-increment: plan;
 }
 
 .plan-name {
-    margin: 0 0 4px;
-    font-weight: 600;
+  margin: 0 0 4px;
+  font-weight: 600;
 }
 
 .plan-name::before {
-    content: counter(plan) ". ";
-    color: var(--color-2);
+  content: counter(plan) ". ";
+  color: var(--color-2);
 }
 
 .plan-zones {
-    margin: 4px 0 0;
-    color: var(--color-2);
-    font-size: 13px;
+  margin: 4px 0 0;
+  color: var(--color-2);
+  font-size: 13px;
 }
 
 /* Описание в плане видно только на печати */
 .plan-details {
-    display: none;
+  display: none;
 }
 
 .plan-remove {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 26px;
-    height: 26px;
-    border: none;
-    border-radius: 50%;
-    background-color: transparent;
-    color: var(--color-2);
-    font-size: 20px;
-    line-height: 1;
-    cursor: pointer;
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background-color: transparent;
+  color: var(--color-2);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
 }
 
 .plan-remove:hover {
-    background-color: var(--color-3);
-    color: var(--color-1);
+  background-color: var(--color-3);
+  color: var(--color-1);
 }
 
 .plan-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 .btn {
-    padding: 10px 8px;
-    border: 1px solid var(--color-1);
-    border-radius: 8px;
-    background-color: var(--color-1);
-    color: var(--color-6);
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
+  padding: 10px 8px;
+  border: 1px solid var(--color-1);
+  border-radius: 8px;
+  background-color: var(--color-1);
+  color: var(--color-6);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .btn:hover {
-    background-color: var(--color-2);
-    border-color: var(--color-2);
+  background-color: var(--color-2);
+  border-color: var(--color-2);
 }
 
 .btn-light {
-    background-color: transparent;
-    color: var(--color-1);
+  background-color: transparent;
+  color: var(--color-1);
 }
 
 .btn-light:hover {
-    color: var(--color-6);
+  color: var(--color-6);
 }
 
 .btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .btn:disabled:hover {
-    background-color: var(--color-1);
-    border-color: var(--color-1);
+  background-color: var(--color-1);
+  border-color: var(--color-1);
 }
 
 .btn-light:disabled:hover {
-    background-color: transparent;
-    color: var(--color-1);
+  background-color: transparent;
+  color: var(--color-1);
 }
 
 .plan-message {
-    min-height: 20px;
-    margin: 10px 0 0;
-    font-size: 14px;
-    text-align: center;
+  min-height: 20px;
+  margin: 10px 0 0;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ---------- Свои инструменты ---------- */
+
+.add-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.badge-custom {
+  background-color: var(--color-1);
+  color: var(--color-6);
+  border: 1px solid var(--color-1);
+}
+
+.hint-delete {
+  margin-top: 4px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-6);
+  border-radius: 6px;
+  background-color: transparent;
+  color: var(--color-6);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.hint-delete:hover {
+  background-color: var(--color-6);
+  color: var(--color-1);
+}
+
+/* ---------- Окно добавления инструмента ---------- */
+
+.dialog {
+  width: 560px;
+  max-width: calc(100% - 30px);
+  padding: 24px;
+  background-color: var(--color-5);
+  color: var(--color-1);
+  border: 1px solid var(--color-2);
+  border-radius: 14px;
+}
+
+.dialog::backdrop {
+  background-color: rgba(5, 31, 32, 0.8);
+}
+
+.dialog h2 {
+  margin: 0 0 16px;
+  font-size: 22px;
+}
+
+.field {
+  display: block;
+  margin: 0 0 14px;
+  padding: 0;
+  border: none;
+  font-size: 14px;
+  color: var(--color-2);
+}
+
+.field legend {
+  padding: 0;
+  margin-bottom: 6px;
+}
+
+.field input[type="text"],
+.field textarea {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 9px 10px;
+  background-color: var(--color-4);
+  color: var(--color-1);
+  border: 1px solid var(--color-3);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 15px;
+}
+
+.field input[type="text"]:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--color-2);
+}
+
+.radio {
+  display: inline-block;
+  margin-right: 18px;
+  color: var(--color-1);
+  font-size: 15px;
+}
+
+.form-error {
+  min-height: 20px;
+  margin: 0 0 8px;
+  color: var(--color-2);
+  font-size: 14px;
+}
+
+.dialog-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.dialog-buttons .btn {
+  padding: 10px 22px;
 }
 
 /* ---------- Блок ручной загрузки базы ---------- */
 
 .load-box {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 24px;
-    background-color: var(--color-5);
-    border: 1px solid var(--color-3);
-    border-radius: 14px;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px;
+  background-color: var(--color-5);
+  border: 1px solid var(--color-3);
+  border-radius: 14px;
 }
 
 .load-box h2 {
-    margin-top: 0;
+  margin-top: 0;
 }
 
 .load-box input {
-    color: var(--color-1);
-    font-size: 15px;
+  color: var(--color-1);
+  font-size: 15px;
 }
 
 .load-error {
-    min-height: 20px;
-    color: var(--color-2);
+  min-height: 20px;
+  color: var(--color-2);
 }
 
 /* ---------- Телефоны и планшеты ---------- */
 
 @media (max-width: 900px) {
-    .page {
-        grid-template-columns: 1fr;
-    }
+  .page {
+    grid-template-columns: 1fr;
+  }
 
-    .right {
-        position: static;
-    }
+  .right {
+    position: static;
+  }
 
-    .header-title {
-        font-size: 30px;
-    }
+  .header-title {
+    font-size: 30px;
+  }
 }
 
 /* ---------- Печать (Ctrl+P): печатаем только план ---------- */
 
 @media print {
-    body {
-        padding: 0;
-        background-color: white;
-        color: black;
-        font-size: 12pt;
-    }
+  body {
+    padding: 0;
+    background-color: white;
+    color: black;
+    font-size: 12pt;
+  }
 
-    .no-print {
-        display: none !important;
-    }
+  .no-print {
+    display: none !important;
+  }
 
-    .page {
-        display: block;
-    }
+  .page {
+    display: block;
+  }
 
-    .right {
-        position: static;
-    }
+  .right {
+    position: static;
+  }
 
-    .plan {
-        padding: 0;
-        border: none;
-        background-color: white;
-    }
+  .plan {
+    padding: 0;
+    border: none;
+    background-color: white;
+  }
 
-    .plan-item {
-        padding: 8px 0;
-        border-bottom: 1px solid #999999;
-        border-radius: 0;
-        background-color: white;
-        page-break-inside: avoid;
-    }
+  .plan-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #999999;
+    border-radius: 0;
+    background-color: white;
+    page-break-inside: avoid;
+  }
 
-    .plan-name::before,
-    .plan-zones {
-        color: black;
-    }
+  .plan-name::before,
+  .plan-zones {
+    color: black;
+  }
 
-    .plan-details {
-        display: block;
-        margin: 4px 0 0;
-        font-size: 11pt;
-    }
+  .plan-details {
+    display: block;
+    margin: 4px 0 0;
+    font-size: 11pt;
+  }
 
-    .badge {
-        border: 1px solid black;
-        background-color: white;
-        color: black;
-    }
+  .badge {
+    border: 1px solid black;
+    background-color: white;
+    color: black;
+  }
 }
