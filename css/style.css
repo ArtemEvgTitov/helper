@@ -230,13 +230,12 @@ body {
 
 .tool-add {
   flex-shrink: 0;
-  width: 30px;
-  height: 30px;
+  padding: 4px 10px;
   border: 1px solid var(--color-2);
-  border-radius: 50%;
+  border-radius: 20px;
   background-color: transparent;
   color: var(--color-1);
-  font-size: 18px;
+  font-size: 12px;
   line-height: 1;
   cursor: pointer;
 }
@@ -566,7 +565,7 @@ body {
   }
 }
 
-@media (max-width: 450px) {
+@media (max-width: 550px) {
   .tool-top {
     flex-direction: column;
   }

@@ -251,7 +251,7 @@ function makeToolCard(tool) {
   var addBtn = document.createElement("button");
   addBtn.className = "tool-add";
   addBtn.type = "button";
-  addBtn.textContent = "+";
+  addBtn.textContent = "Добавить в план";
   addBtn.title = "Добавить в план";
 
   top.appendChild(name);
