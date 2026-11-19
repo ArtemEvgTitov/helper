@@ -505,6 +505,7 @@ body {
   display: inline-block;
   margin-right: 18px;
   color: var(--color-1);
+  accent-color: var(--color-2);
   font-size: 15px;
 }
 
