@@ -1,11 +1,17 @@
 /* Цвета сайта */
 :root {
-  --color-1: #daf1de;
+  --color-1: #fff9f0;
+  --color-2: #f1f5f9;
+  --color-3: #334155;
+  --color-4: #334155;
+  --color-5: #1f2937;
+  --color-6: #121212;
+  /* --color-1: #daf1de;
   --color-2: #8eb69b;
   --color-3: #235347;
   --color-4: #163832;
   --color-5: #0b2b26;
-  --color-6: #051f20;
+  --color-6: #051f20; */
 }
 
 * {
